@@ -17,7 +17,7 @@ env.roledefs = {
 			'zenossserver01.nope.example.com',
 			],
 	'webservers' : [ 
-			'webserver%02d.ma01.shuttercorp.net' % n for n in xrange(01,99)
+			'webserver%02d.example.com' % n for n in xrange(01,99)
 			],
 	}
 
@@ -96,7 +96,7 @@ def superup():
 
 def ntpdupdate():
 	try:
-		sudo ("/etc/init.d/ntpd stop && ntpdate ops-ntp01.ma01.shuttercorp.net && sleep 3 && /etc/init.d/ntpd start")
+		sudo ("/etc/init.d/ntpd stop && ntpdate ntpserver.example.com && sleep 3 && /etc/init.d/ntpd start")
 	except:
 		print ("failed to update date")
 
