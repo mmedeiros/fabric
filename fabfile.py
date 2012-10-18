@@ -1,8 +1,10 @@
 from fabric.api import * 
 import sys 
 
-
-
+# Define your classed machines here
+# this allows you to run specific commands 
+# against specific machine classes 
+# (e.g. web servers, db servers)
 env.roledefs = { 
 	'hypervisors' : [
 			'hypervisor01.example.com', 
@@ -19,6 +21,14 @@ env.roledefs = {
 			],
 	}
 
+# Define your global hosts here 
+# this will run non-scoped commands 
+# against all the hosts below 
+env.hosts = [
+		'workstation666.example.com',
+		'master-server.example.com',
+		'everything_else.example.com',
+		]
 def uptime(): 
 	try: 
 		sudo ("uptime")
@@ -41,8 +51,10 @@ def httpd_status():
 @roles('webservers')
 def httpd_restart():
 	try: 
-		sudo ("service httpdv1-perl restart && service httpdv1-proxy restart && service httpdv1-ssl restart")
-		sudo ("service httpdv1-perl status && service httpdv1-proxy status && service httpdv1-ssl status")
+		sudo ("for i in $(ls /etc/init.d/httpdv1-*); do sudo $i restart; done")
+		sudo ("for i in $(ls /etc/init.d/httpdv1-*); do sudo $i status; done")
+		#sudo ("service httpdv1-perl restart && service httpdv1-proxy restart && service httpdv1-ssl restart")
+		#sudo ("service httpdv1-perl status && service httpdv1-proxy status && service httpdv1-ssl status")
 	except: 
 		print ("httpd service restarts failed") 
 
@@ -64,6 +76,29 @@ def activemqlog():
 	except: 
 		print ("cannot read activemq log")
 
+def resetldap():
+	try:
+		sudo ('service sssd stop && rm -f /var/lib/sss/db/cache_LDAP.ldb && service sssd start')
+	except:
+		print ( "could not reset ldap")
+
+def ldapid():
+	try:
+		sudo ("id sys.argv[0]")
+	except:
+		print ("error")
+
+def superup():
+	try:
+		sudo ("supervisorctl status | grep $regex | awk '{print \"supervisorctl start \"$1}' | sh")
+	except:
+		print("Could not restart supervisorctl")
+
+def ntpdupdate():
+	try:
+		sudo ("/etc/init.d/ntpd stop && ntpdate ops-ntp01.ma01.shuttercorp.net && sleep 3 && /etc/init.d/ntpd start")
+	except:
+		print ("failed to update date")
 
 @roles('zenoss')
 def zenoss_remodel():
