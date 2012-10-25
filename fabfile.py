@@ -19,6 +19,9 @@ env.roledefs = {
 	'webservers' : [ 
 			'webserver%02d.example.com' % n for n in xrange(01,99)
 			],
+	'mogilefsnodes' : [ 
+			'mogilefsnode%02d.example.com' % n for n in xrange(01,99)
+			],
 	}
 
 # Define your global hosts here 
@@ -99,6 +102,13 @@ def ntpdupdate():
 		sudo ("/etc/init.d/ntpd stop && ntpdate ntpserver.example.com && sleep 3 && /etc/init.d/ntpd start")
 	except:
 		print ("failed to update date")
+
+@roles('mogilefsnodes')
+def mogile():
+	try: 
+		sudo ("for dir in $(ls -al /var/mogdata/ | grep \"?\" |  awk '{print $NF}'); do umount $dir && sleep 3 && mount $dir; done")
+	except: 
+		print ("cannot re-mount mogilefs nodes")
 
 @roles('zenoss')
 def zenoss_remodel():
