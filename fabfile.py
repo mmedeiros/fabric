@@ -51,6 +51,13 @@ def httpd_status():
 	except: 
 		print ("httpd service restarts failed") 
 
+@roles('snmpd_boxes')
+def snmpd_restart():
+	try: 
+		sudo ("service snmpd restart && service snmpd status") 
+	except: 
+		print ("httpd service restarts failed") 
+
 @roles('webservers')
 def httpd_restart():
 	try: 
@@ -67,6 +74,29 @@ def puppet():
 	except: 
 		print ("cannot run puppet")
 
+@roles('scribe_boxes')
+def stopscribe(): 
+#stop scribe kill related processes on the target machines
+	try: 
+		sudo ("supervisorctl stop scribe_node:scribe_node_0")
+		sudo ("puppetd --disable")
+		sudo ("/etc/init.d/scribed stop")
+		sudo ("for pid in $(ps aux | grep scribe | awk '{print $2}'); do kill -9 $pid; done ")
+		sudo ("/etc/init.d/scribed status")
+		# you can run this command on the target machine to confirm success 
+		# clear; hostname; date;  supervisorctl status scribe_node:scribe_node_0 && /etc/init.d/scribed status ; puppetd -tv
+
+	except: 
+		print ("some scribe services could not be stopped")
+
+@roles('activemq')
+def kick_activemq(): 
+	try: 
+		sudo ("service activemq stop && sleep 3 && service activemq start")
+	except: 
+		print ("cannot get activemq status")
+
+@roles('activemq')
 def activemq(): 
 	try: 
 		sudo ("service activemq status")
@@ -97,6 +127,14 @@ def superup():
 	except:
 		print("Could not restart supervisorctl")
 
+@roles('ntp_servers')
+def check_ntp():
+	try:
+		sudo ("/etc/init.d/ntpd status")
+	except:
+		print ("failed to update date")
+
+@roles('ntp_servers')
 def ntpdupdate():
 	try:
 		sudo ("/etc/init.d/ntpd stop && ntpdate ntpserver.example.com && sleep 3 && /etc/init.d/ntpd start")
@@ -115,9 +153,15 @@ def zenoss_remodel():
 	try: 
 		# this works, but is ugly
 		sudo ("runuser -l zenoss -c 'for i in `cat /home/user/list`; do zenmodeler run -d $i; done'")
-
 	except: 
 		print ("cannot re-run zenoss monitor checks")
+
+@roles('search_boxes')
+def scribed_status(): 
+	try: 
+		sudo ("/etc/init.d/scribed status")
+	except: 
+		print ("cannot get scribed status") 
 
 @roles('hypervisors')
 def reboot_vms(): 
