@@ -16,6 +16,9 @@ env.roledefs = {
 	'zenoss' : [ 
 			'zenossserver01.nope.example.com',
 			],
+	'webservers_hard' : [ 
+			'web05.example.com',
+			],
 	'webservers' : [ 
 			'webserver%02d.example.com' % n for n in xrange(01,99)
 			],
@@ -43,6 +46,17 @@ def hostname():
 		sudo ("hostname")
 	except: 
 		print ("cannot get hostname")
+
+@roles('webservers_hard')
+def hard_httpd_restart():
+	try: 
+		run  ("echo Make sure you add hosts to the webservers_hard array\!")
+		sudo ("for i in $(ls /etc/init.d/httpdv1-*); do sudo $i stop; done")
+		sudo ("for pid in $(ps aux | grep httpd | grep -v grep | awk '{print $2}'); do kill -9 $pid; done ")
+		sudo ("for i in $(ls /etc/init.d/httpdv1-*); do sudo $i start; done")
+		sudo ("for i in $(ls /etc/init.d/httpdv1-*); do sudo $i status; done")
+	except: 
+		print ("httpd service restarts failed") 
 
 @roles('webservers')
 def httpd_status():
@@ -75,6 +89,18 @@ def puppet():
 		print ("cannot run puppet")
 
 @roles('scribe_boxes')
+def startscribe(): 
+#restart scribe processes on the target machines
+	try: 
+		sudo ("supervisorctl start scribe_node:scribe_node_0")
+		sudo ("puppetd --enable")
+		sudo ("/etc/init.d/scribed start")
+		sudo ("/etc/init.d/scribed status")
+
+	except: 
+		print ("some scribe services could not be stopped")
+
+@roles('search_boxes')
 def stopscribe(): 
 #stop scribe kill related processes on the target machines
 	try: 
@@ -141,6 +167,15 @@ def ntpdupdate():
 	except:
 		print ("failed to update date")
 
+@roles('mogilefstrackers')
+def mogile_status():
+	try: 
+		sudo ("echo '!jobs' | nc `hostname` 6001")
+		sudo ("echo '=== only showing error entries ==='")
+		sudo ("mogadm check | grep -v writeable")
+	except: 
+		print ("error checking mogilefs trackers")
+
 @roles('mogilefsnodes')
 def mogile():
 	try: 
@@ -159,7 +194,7 @@ def zenoss_remodel():
 @roles('search_boxes')
 def scribed_status(): 
 	try: 
-		sudo ("/etc/init.d/scribed status")
+		sudo ("supervisorctl status scribe_node:scribe_node_0")
 	except: 
 		print ("cannot get scribed status") 
 
