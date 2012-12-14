@@ -41,6 +41,12 @@ def uptime():
 	except: 
 		print ("unable to get uptime")
 
+def mcorestart(): 
+	try: 
+		sudo ("/etc/init.d/mcollective stop && /etc/init.d/mcollective start && /etc/init.d/mcollective status")
+	except: 
+		print ("could not restart mcollective service")
+
 def hostname():
 	try: 
 		sudo ("hostname")
@@ -87,6 +93,20 @@ def puppet():
 		sudo ("puppetd -tv")
 	except: 
 		print ("cannot run puppet")
+
+
+def puppetstate(): 
+	try: 
+		sudo ("ls -alh /var/lib/puppet/state/*")
+	except: 
+		print ("cannot get puppet state file list")
+
+@roles('new_hypervisors')
+def messages(): 
+	try: 
+		sudo ("tail -n 20 /var/log/messages")
+	except: 
+		print ("cannot tail messages")
 
 @roles('scribe_boxes')
 def startscribe(): 
