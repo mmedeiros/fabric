@@ -13,6 +13,9 @@ env.roledefs = {
 			'hypervisor04.example.com', 
 			'hypervisor05.example.com', 
 			],
+	'icinga' : [ 
+			'icinga01.example.com',
+			],
 	'zenoss' : [ 
 			'zenossserver01.nope.example.com',
 			],
@@ -202,6 +205,20 @@ def mogile():
 		sudo ("for dir in $(ls -al /var/mogdata/ | grep \"?\" |  awk '{print $NF}'); do umount $dir && sleep 3 && mount $dir; done")
 	except: 
 		print ("cannot re-mount mogilefs nodes")
+
+@roles('icinga')
+def kick_nagios():
+	try:
+		sudo("service ido2db status") 
+		sudo("service ido2db stop") 
+		sudo("rm -f /var/icinga/ido.sock") 
+		sudo("service ido2db start")
+		sudo("service icinga checkconfig && service icinga restart")
+		sudo("service ido2db status") 
+		sudo("service icinga status") 
+
+	except: 
+		print ("cannot cycle nagios services") 
 
 @roles('zenoss')
 def zenoss_remodel():
