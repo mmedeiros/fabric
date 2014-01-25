@@ -248,3 +248,27 @@ def list_vms():
 		sudo ("virsh list --all")
 	except: 
 		print ("cannot list vms on hypervisor")
+
+@roles('servicebox')
+def java_len(): 
+	try: 
+		sudo ("cd /home/mmedeiros/ && java Test") 
+	except: 
+		print ("cannot run encryption length test")
+
+@roles('gooo')
+def jvm_crypt_and_test(): 
+	proddir = '/usr/java/current/jre/lib/security'
+	homedir = '/home/mmedeiros'
+	file1 = 'local_policy.jar'
+	file2 = 'US_export_policy.jar'
+	try:
+		sudo ("cp %s/%s %s/%s.bak" % (proddir, file1, proddir, file1))
+		sudo ("cp %s/%s %s/%s.bak" % (proddir, file2, proddir, file2))
+		sudo ("ls -al %s/*policy.jar*" % (proddir))
+		sudo ("cp %s/%s.new %s/%s" % (homedir, file1, proddir, file1))
+		sudo ("cp %s/%s.new %s/%s" % (homedir, file2, proddir, file2))
+		sudo ("cd %s && java Test" % (homedir))
+	except: 
+		print ("move files and run test") 
+
