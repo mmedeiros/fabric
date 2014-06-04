@@ -256,6 +256,16 @@ def java_len():
 	except: 
 		print ("cannot run encryption length test")
 
+def hostinfo(): 
+	try: 
+		run ("cat /etc/issue")
+    run ("cat /proc/meminfo | grep MemTotal | awk '{print $2}'")
+    run ("\df -hP | column -t")
+    run ("nproc")
+	except: 
+		print ("cannot determine system info")
+
+
 @roles('gooo')
 def jvm_crypt_and_test(): 
 	proddir = '/usr/java/current/jre/lib/security'
